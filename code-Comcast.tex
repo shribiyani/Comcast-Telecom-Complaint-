@@ -1,0 +1,266 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={Comcast Telecom Complaints},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx,grffile}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+
+\title{Comcast Telecom Complaints}
+\author{}
+\date{\vspace{-2.5em}}
+
+\begin{document}
+\maketitle
+
+library(stringi) library(lubridate) library(dplyr) library(ggplot2)
+library(ggpubr)
+
+\hypertarget{importing-loading-dataset-as--}{%
+\section{Importing \& loading dataset as
+-}\label{importing-loading-dataset-as--}}
+
+comcast\_data \textless- read.csv(``E:/DATA ANALYTICS/Projects/R
+Projects/2. Comcast telecom complaints data/Comcast Telecom Complaints
+data.csv'', header = TRUE) \# manipulating column names
+
+names(comcast\_data)\textless- stri\_replace\_all(regex =
+``\textbackslash.'',replacement = "",str = names(comcast\_data))
+head(comcast\_data) View(comcast\_data)
+
+\hypertarget{finding-na-or-null-in-data}{%
+\section{finding NA or null in data}\label{finding-na-or-null-in-data}}
+
+na\_vec\textless- is.na(comcast\_data) length(na\_vec{[}na\_vec==T{]})
+
+\hypertarget{modification-in-date}{%
+\section{modification in date}\label{modification-in-date}}
+
+comcast\_data\(Date<- dmy(comcast_data\)Date)
+
+\hypertarget{extracting-monthly-ticket-count}{%
+\section{Extracting monthly ticket
+count}\label{extracting-monthly-ticket-count}}
+
+monthly\_count \textless- summarise(group\_by(comcast\_data, Month =
+as.integer(month(Date))),count = n()) monthly\_count \textless-
+arrange(monthly\_count,Month) View(monthly\_count)
+
+\hypertarget{extracting-daily-ticket-counts}{%
+\section{Extracting Daily Ticket
+counts}\label{extracting-daily-ticket-counts}}
+
+daily\_count\textless- summarise(group\_by(comcast\_data,Date),count
+=n()) View(daily\_count)
+
+\hypertarget{comparing-monthly-complaints}{%
+\section{Comparing Monthly
+Complaints}\label{comparing-monthly-complaints}}
+
+ggplot(data = monthly\_count,aes(Month,count,label = count))+
+geom\_line()+ geom\_point(size = 0.8)+ geom\_text()+
+scale\_x\_continuous(breaks = monthly\_count\$Month)+ labs(title =
+``Monthly Ticket Count'',x = ``Monthly'', y = ``No.of Tickets'')+
+theme(plot.title = element\_text(hjust = 0.5))
+
+\hypertarget{comparing-daily-ticket-complaints}{%
+\section{Comparing Daily Ticket
+Complaints}\label{comparing-daily-ticket-complaints}}
+
+ggplot(data = daily\_count,aes(as.POSIXct(Date),count))+ geom\_line()+
+geom\_point(size = 1)+ scale\_x\_datetime(breaks = ``1
+weeks'',date\_labels = ``\%d/\%m'')+ labs(title = ``Daily Ticket
+Count'',x= ``Days'',y =``No.~of Tickets'')+ theme(axis.text.x =
+element\_text(angle = 75), plot.title = element\_text(hjust = 0.5))
+
+\hypertarget{complaints-types-as--}{%
+\section{Complaints Types as -}\label{complaints-types-as--}}
+
+network\_tickets\textless-
+contains(comcast\_data\$CustomerComplaint,match = `network',ignore.case
+= T) table(network\_tickets) View(network\_tickets)
+
+internet\_tickets\textless-
+contains(comcast\_data\$CustomerComplaint,match = `internet',ignore.case
+= T) table(internet\_tickets) View(internet\_tickets)
+
+billing\_tickets\textless-
+contains(comcast\_data\$CustomerComplaint,match = `bill',ignore.case =
+T) table(billing\_tickets) View(billing\_tickets)
+
+email\_tickets \textless-
+contains(comcast\_data\$CustomerComplaint,match = `email',ignore.case =
+T) table(email\_tickets) View(email\_tickets)
+
+charges\_tickets\textless-
+contains(comcast\_data\$CustomerComplaint,match = `charge',ignore.case =
+T) table(charges\_tickets) View(charges\_tickets)
+
+comcast\_data\(ComplaintType[internet_tickets]<- "Internet" comcast_data\)ComplaintType{[}network\_tickets{]}\textless-
+``Network''
+comcast\_data\(ComplaintType[email_tickets]<- "Email" comcast_data\)ComplaintType{[}charges\_tickets{]}\textless-
+``Charges''
+comcast\_data\(ComplaintType[billing_tickets]<- "Billing" comcast_data\)ComplaintType{[}-c(internet\_tickets,network\_tickets,
+billing\_tickets,charges\_tickets,email\_tickets){]}\textless-
+``Others''
+
+table(comcast\_data\(ComplaintType) summary(comcast_data\)ComplaintType)
+View(comcast\_data\$ComplaintType) View(comcast\_data)
+
+\hypertarget{creating-new-variable-complaint-status-with-open-and-closed}{%
+\section{Creating new variable Complaint status with Open and
+Closed}\label{creating-new-variable-complaint-status-with-open-and-closed}}
+
+open\_complaints\textless-
+(comcast\_data\(Status == "Open"|comcast_data\)Status ==``Pending'')
+table(open\_complaints) View(open\_complaints)
+
+closed\_complaints\textless-
+(comcast\_data\(Status == "Closed"|comcast_data\)Status ==``Solved'')
+table(closed\_complaints) View(closed\_complaints)
+
+comcast\_data\(ComplaintStatus[open_complaints]<-"Open" comcast_data\)ComplaintStatus{[}closed\_complaints{]}\textless-``Closed''
+
+View(comcast\_data\(ComplaintStatus[open_complaints]) View(comcast_data\)ComplaintStatus{[}closed\_complaints{]})
+
+View(comcast\_data)
+
+\hypertarget{complaint-type-wise-status}{%
+\section{Complaint Type wise Status}\label{complaint-type-wise-status}}
+
+comcast\_data\textless-
+group\_by(comcast\_data,ComplaintType,ComplaintStatus)
+chart\_data\textless- summarise(comcast\_data,Count = n())
+View(chart\_data)
+
+ggplot(as.data.frame(chart\_data),mapping = aes(ComplaintType,Count))+
+geom\_col(aes(fill = ComplaintStatus),width = 0.95)+ theme(axis.text.x =
+element\_text(angle = 90), axis.title.y = element\_text(size = 15),
+axis.title.x = element\_text(size = 15), title = element\_text(size =
+16, colour = ``\#0073C2FF''), plot.title = element\_text(hjust = 0.5))+
+labs(title = ``Ticket Status'', x = ``Complaint Type'',y = ``No.~of
+Tickets'', color = ``\#0073C2FF'')
+
+\hypertarget{creating-stacked-bar-chart-for-complaints-based-on-state-status}{%
+\section{Creating Stacked Bar chart for Complaints based on State \&
+Status}\label{creating-stacked-bar-chart-for-complaints-based-on-state-status}}
+
+comcast\_data\textless- group\_by(comcast\_data,State,ComplaintStatus)
+chart\_data\textless- summarise(comcast\_data,Count = n())
+View(chart\_data)
+
+ggplot(as.data.frame(chart\_data),mapping = aes(State,Count))+
+geom\_col(aes(fill = ComplaintStatus),width = 0.95)+ theme(axis.text.x =
+element\_text(angle = 90), axis.title.y = element\_text(size = 15),
+axis.title.x = element\_text(size = 15), title = element\_text(size =
+16, colour = ``\#0073C2FF''), plot.title = element\_text(hjust = 0.5))+
+labs(title = ``State wise Ticket Status'', x = ``States'',y = ``No.~of
+Tickets'', fill = ``Status'')
+
+\hypertarget{finding-state-which-has-highest-number-of-unsolved-tickets}{%
+\section{Finding State which has Highest number of Unsolved
+Tickets}\label{finding-state-which-has-highest-number-of-unsolved-tickets}}
+
+chart\_data\%\textgreater\% filter(ComplaintStatus ==
+``Open'')-\textgreater{} open\_complaints
+open\_complaints{[}open\_complaints\(Count == max(open_complaints\)Count),c(1,3){]}
+
+chart\_data \%\textgreater\% filter(ComplaintStatus == ``Closed'')
+-\textgreater{} closed\_complaints
+closed\_complaints{[}closed\_complaints\(Count == max(closed_complaints\)Count/100*100),c(1,3){]}
+
+\hypertarget{calculating-resolution-percentage-based-on-total-category}{%
+\section{Calculating Resolution Percentage based on Total \&
+Category}\label{calculating-resolution-percentage-based-on-total-category}}
+
+resolved\_data \textless- group\_by(comcast\_data,ComplaintStatus)
+total\_resolved\textless- summarise(resolved\_data,percentage
+=(n()/nrow(resolved\_data))) View(total\_resolved)
+
+resolved\_data \textless-
+group\_by(comcast\_data,ReceivedVia,ComplaintStatus)
+Category\_resolved\textless- summarise(resolved\_data, percentage
+=(n()/nrow(resolved\_data))) View(Category\_resolved)
+
+\hypertarget{pie-chart-for-resolved-vs-category-resolved}{%
+\section{Pie Chart for Resolved vs Category
+Resolved}\label{pie-chart-for-resolved-vs-category-resolved}}
+
+par(mfrom = c(1,2))
+
+\hypertarget{pie-chart-for-resolved}{%
+\section{Pie Chart for Resolved}\label{pie-chart-for-resolved}}
+
+ggplot(total\_resolved, aes(x="``,y=percentage,fill = ComplaintStatus))+
+geom\_bar(stat =''identity``,width = 1)+ coord\_polar(''y",start = 0)+
+geom\_text(aes(label = paste0(round(percentage*100),``\%'')), position =
+position\_stack(vjust = 0.5))+ labs(x = NULL,y = NULL,fill = NULL)+
+theme\_classic() +theme(axis.line = element\_blank(), axis.text =
+element\_blank(), axis.ticks = element\_blank())
+
+\hypertarget{pie-chart-for-category-wise-ticket-satus}{%
+\section{Pie chart for Category wise Ticket
+Satus}\label{pie-chart-for-category-wise-ticket-satus}}
+
+ggplot(Category\_resolved, aes(x="``,y=percentage,fill =
+ComplaintStatus))+ geom\_bar(stat =''identity``,width = 1)+
+coord\_polar(''y``,start = 0)+ geom\_text(aes(label =
+paste0(ReceivedVia,''-",round(percentage*100),``\%'')), position =
+position\_stack(vjust = 0.5))+ labs(x = NULL,y = NULL,fill = NULL)+
+theme\_classic() +theme(axis.line = element\_blank(), axis.text =
+element\_blank(), axis.ticks = element\_blank())
+
+\end{document}
